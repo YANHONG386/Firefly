@@ -48,10 +48,17 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	local: {
 		playlist: [
 			{
-				name: "使一颗心免于哀伤",
-				artist: "知更鸟 / HOYO-MiX / Chevy",
-				url: "/assets/music/使一颗心免于哀伤-哼唱.mp3",
-				cover: "/assets/music/cover/109951169585655912.webp",
+				name: "Komm, süsser Tod",
+				artist: "EVA剧场版：真心为你",
+				url: "/assets/music/Komm, süsser Tod.mp3",
+				cover: "/assets/music/cover/image.png",
+				lrc: "",
+			},
+			{
+				name: "FLY ME TO THE MOON",
+				artist: "林原惠美",
+				url: "/assets/music/FLY ME TO THE MOON.mp3",
+				cover: "/assets/music/cover/moon.jpg",
 				lrc: "",
 			},
 		],
