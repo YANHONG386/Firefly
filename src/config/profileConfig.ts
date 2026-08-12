@@ -9,10 +9,10 @@ export const profileConfig: ProfileConfig = {
 	avatar: "/assets/images/GIFTOUX.gif",
 
 	// 名字
-	name: "YHONG386",
+	name: "YHONG_386",
 
 	// 个人签名
-	bio: "Hello, I'm YHONG386.",
+	bio: "Hello, I'm YHONG_386.",
 
 	// 链接配置
 	// 已经预装的图标集：fa7-brands，fa7-regular，fa7-solid，material-symbols，simple-icons
