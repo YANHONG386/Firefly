@@ -3,10 +3,20 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils";
 
+/** 隐藏 2025 年之前发布的文章（含 2024 及更早） */
+const HIDE_PUBLISHED_BEFORE = new Date("2025-01-01");
+
+/** 统一的文章过滤条件：非草稿 + 发布时间在可见范围 */
+function isPostVisible(data: { draft?: boolean; published: Date }) {
+	if (import.meta.env.PROD && data.draft === true) return false;
+	if (data.published < HIDE_PUBLISHED_BEFORE) return false;
+	return true;
+}
+
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return isPostVisible(data);
 	});
 
 	const sorted = allBlogPosts.sort((a, b) => {
@@ -58,7 +68,7 @@ export type Tag = {
 
 export async function getTagList(): Promise<Tag[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return isPostVisible(data);
 	});
 
 	const countMap: { [key: string]: number } = {};
@@ -85,7 +95,7 @@ export type Category = {
 
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return isPostVisible(data);
 	});
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
@@ -161,7 +171,7 @@ export async function getRelatedPosts(
 	maxCount = 5,
 ): Promise<PostForList[]> {
 	const allPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return isPostVisible(data);
 	});
 
 	// 排除自身和加密文章
