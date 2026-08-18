@@ -103,6 +103,66 @@ import { url } from "@/utils/url-utils";
     }
   }
 
+  // ========== 拖拽功能 ==========
+  // 通过 Pointer Events 实现鼠标/触摸拖动，拖拽超过阈值时不触发点击动画
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragMoved = false;
+
+  function initDragging() {
+    const container = document.getElementById("spine-model-container");
+    if (!container) return;
+
+    // 阻止触摸时的默认滚动/缩放行为
+    container.style.touchAction = "none";
+    container.style.cursor = "grab";
+    container.style.userSelect = "none";
+
+    container.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      dragMoved = false;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+
+      // 从 fixed 角定位切换为绝对坐标定位
+      const rect = container.getBoundingClientRect();
+      container.style.left = rect.left + "px";
+      container.style.top = rect.top + "px";
+      container.style.bottom = "auto";
+      container.style.right = "auto";
+
+      container.style.cursor = "grabbing";
+      container.setPointerCapture?.(e.pointerId);
+    });
+
+    container.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      // 超过阈值视为拖拽而非点击
+      if (Math.abs(dx) + Math.abs(dy) > 5) dragMoved = true;
+
+      const currentLeft = parseFloat(container.style.left) || 0;
+      const currentTop = parseFloat(container.style.top) || 0;
+      container.style.left = currentLeft + dx + "px";
+      container.style.top = currentTop + dy + "px";
+
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+    });
+
+    const endDrag = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      container.style.cursor = "grab";
+    };
+
+    container.addEventListener("pointerup", endDrag);
+    container.addEventListener("pointercancel", endDrag);
+  }
+
   // 清理函数
   function cleanupSpineModel() {
     console.log("🧹 Cleaning up existing Spine model...");
@@ -226,6 +286,9 @@ import { url } from "@/utils/url-utils";
       // 然后等待 Spine 对象可用
       await waitForSpine();
 
+      // 初始化拖拽功能
+      initDragging();
+
       // 标记为已初始化
       window.spineModelInitialized = true;
 
@@ -325,11 +388,13 @@ import { url } from "@/utils/url-utils";
 
           // 设置交互功能
           if (spineModelConfig.interactive.enabled) {
-            const canvas = document.querySelector(
-              "#spine-player-container canvas"
-            );
-            if (canvas) {
-              canvas.addEventListener("click", () => {
+            // 点击监听挂在容器上（canvas 会被 pointer capture 拦截）
+            const container = document.getElementById("spine-model-container");
+            if (container) {
+              container.addEventListener("click", () => {
+                // 拖拽后不触发点击动画
+                if (dragMoved) return;
+
                 // 防抖处理：防止重复点击
                 const currentTime = Date.now();
                 if (isClickProcessing || currentTime - lastClickTime < 500) {
